@@ -1,13 +1,23 @@
 import { Manager } from "socket.io-client";
 import { Socket } from "socket.io-client";
-export const connectToServer = () => {
-  const manager = new Manager("localhost:3000/socket.io/socket.io.js");
 
-  const socket = manager.socket("/");
-  addListeners(socket);
+let socket: Socket;
+
+export const connectToServer = (token: string) => {
+  const manager = new Manager("localhost:3000/socket.io/socket.io.js", {
+    extraHeaders: {
+      hola: "munno",
+      authentication: token,
+    },
+  });
+
+  /* borrar listeners anteriores */
+  socket?.removeAllListeners();
+  socket = manager.socket("/");
+  addListeners();
 };
 
-const addListeners = (socket: Socket) => {
+const addListeners = () => {
   const serverStatusLabel = document.querySelector("#server-status")!;
   const clientsUl = document.querySelector("#clients-ul")!;
   const messageForm = document.querySelector<HTMLFormElement>("#message-form")!;
@@ -35,7 +45,7 @@ const addListeners = (socket: Socket) => {
     event.preventDefault();
     if (messageInput.value.trim().length <= 0) return;
     socket.emit("message-from-client", {
-      id: "yo",
+      id: "",
       message: messageInput.value,
     });
     messageInput.value = "";
